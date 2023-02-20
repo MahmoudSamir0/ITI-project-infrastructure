@@ -50,7 +50,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   node_count = 1
   node_config {
     preemptible = true
-    machine_type = "e2-medium"
+    machine_type = "e2-standard-4"
 
     service_account = google_service_account.myservice-account-gke.email
     oauth_scopes = [
