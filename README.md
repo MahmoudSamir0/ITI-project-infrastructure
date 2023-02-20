@@ -3,8 +3,6 @@
 # project-terraform-gcp-gke-infrastructure
 ![lab](https://github.com/MahmoudSamir0/project-terraform-gcp-gke-infrastructure/blob/master/screenshot/w.png)
 
-![final](https://github.com/MahmoudSamir0/project-terraform-gcp-gke-infrastructure/blob/master/screenshot/Screenshot%20from%202023-02-14%2010-00-21.png)
-
 ## Requirements
 
 Before this module can be used on a project, you must ensure that the following pre-requisites are fulfilled:
@@ -43,7 +41,6 @@ Before this module can be used on a project, you must ensure that the following 
 sudo apt update
 ```
 
-## Configure Docker & gcloud to work with GCR of your project
 1. run following command  to login in your cli 
 - login to your  account in (google cloud platform)
 
@@ -52,92 +49,20 @@ sudo apt update
   ```shell script
   gcloud auth login
   ```
-2. be sure that you have install docker 
-- [docker](https://docs.docker.com/engine/install/)
 
-3.  to use docker without sudo 
-
- **copy this command**
-  
-  ```shell script
- sudo usermod -a -G docker ${USER}
-```
-4.   **copy this command**
-
-
-  ```shell script
- VERSION=2.1.5
-OS=linux  # or "darwin" for OSX, "windows" for Windows.
-ARCH=amd64  # or "386" for 32-bit OSs, "arm64" for ARM 64.
-
-curl -fsSL "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v${VERSION}/docker-credential-gcr_${OS}_${ARCH}-${VERSION}.tar.gz" \
-| tar xz docker-credential-gcr \
-&& chmod +x docker-credential-gcr && sudo mv docker-credential-gcr /usr/bin/
-```
- **copy this command**
-
-  ```shell script
-
-gcloud auth configure-docker
-```
- **copy this command**
-
-```shell script
-docker-credential-gcr configure-docker
-```
-## to build your app and dockerize it 
 - clone this repo 
  (copy this command)
 
  ```shell script
-git clone https://github.com/MahmoudSamir0/project-terraform-gcp-gke-infrastructure.git
+git clone https://github.com/MahmoudSamir0/ITI-project-infrastructure.git
 ```
 - enter the file of repo
 
  **copy this command**
 
 ```shell script
-  cd project-terraform-gcp-gke-infrastructure
+  cd ITI-project-infrastructure
 ```
-
-- enter the file of app
-
- **copy this command**
-
-```shell script
-  cd dockerized_app
-```
-
-- build the app
-
- **copy this command change project id**
-
-```shell script
-docker build -t gcr.io/<project-id>/final_app .
-```
- (copy this command)
-
-```shell script
-docker image ls
-```
-
-- push it to your container repo in gcp
-
- **copy this command change project id**
-  
-```shell script
-docker push gcr.io/<project-id>/final_app
-```
-
-- back to your main file 
-
- **copy this command**
-
-```shell script
-cd ..
-```
-## your image is ready
-
 ## Build infrastructure
 
 ### Terraform
@@ -146,7 +71,6 @@ You can verify that terraform is  installed in your local ,machine
 this by running `terraform version`.
 
  **copy this command**
-
 
 ```shell script
 terraform version
@@ -1010,205 +934,3 @@ Do you want to perform these actions?
 answer `yes` to the confirmation prompt.
 
 ## now your infrastructure is ready 
-
-## connect to your private instance using ssh
-
- **copy this command before that modify the require in <>**
-
-
- ```shell script
- gcloud compute ssh --zone "<zone of your instance>" "<instance id>" --tunnel-through-iap --project "<project id>"
-```
-
-## you are now in your private machine
-
-install kubetcl 
-- [kubectl](https://kubernetes.io/docs/tasks/tools)
-
-
-- install google-cloud-sdk-gke-gcloud-auth-plugin 
-
- **copy this command**
-
-```shell script
-sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
-```
-### connect to your cluster
-
- **copy this command before that modify the require in <>**
-
-
-```shell script
-gcloud container clusters get-credentials <cluster name> --zone <zone> --project <project id>
-```
-you will get this massage 
-
-```
-Fetching cluster endpoint and auth data.
-kubeconfig entry generated for <cluster name>.
-```
-
--  show number of node you have 
-
- **copy this command**
-
-```shell script
-kubectl get node
-```
-you will get this
- 
-```
-NAME                                                 STATUS   ROLES    AGE     VERSION
-gke-my-gke-cluster-my-task-node-pool-df43f273-zdp2   Ready    <none>   2m19s   v1.24.9-gke.2000
-
-```
-
--  prepare your deployment files
-
-**copy this command**
-
-
-```shell script
-vim deploy.yml
-
-```
- copy this in your deploy file **change project id**
-```
-apiVersion: apps/v1
-
-kind: Deployment
-
-metadata:
-
-  name: final-app
-
-  labels:
-
-    app: final-app
-    type: front-end
-
-spec:
-
-  replicas: 3
-
-  selector:
-
-    matchLabels:
-
-      app: final-app
-      type: front-end
-
-
-
-  template:
-
-    metadata:
-
-      labels:
-
-        app: final-app
-        type: front-end
-
-
-    spec:
-
-      containers:
-
-      - name: final-app
-
-        image: gcr.io/<project-id>/final_app
-
-        ports:
-
-        - containerPort: 8000
-
-      - name: db-redis
-
-        image: redis
-
-        ports:
-
-        - containerPort: 6379
-
-```
-
-- now prepare your service 
-
-
-```shell script
-vim ser.yml
-
-```
-**copy this**
-```
-apiVersion: v1
-kind: Service
-metadata:
-  name: final-app-service
-  labels:
-    app: final-app
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 8000
-  selector:
-    app: final-app
-    
-```
-
-## run your files
-
-**copy this command**
-
-```shell script
-kubectl apply -f deploy.yml
-```
-**copy this command**
-
-
-```shell script
-kubectl apply -f ser.yml 
-```
-
-**check your pods**
-
-**copy this command**
-
-
-```shell script
-kubectl get po
-```
-you will get this
-
-```
-NAME                         READY   STATUS    RESTARTS      AGE
-final-app-7b4dcb85d5-cnksp   2/2     Running   1 (12s ago)   16s
-final-app-7b4dcb85d5-d4dtf   2/2     Running   1 (13s ago)   16s
-final-app-7b4dcb85d5-qs6kh   2/2     Running   1 (13s ago)   16s
-```
-**check your service**
-**copy this command**
-
-```shell script
-kubectl get service
-```
-you will get this
-
-```
-NAME                TYPE           CLUSTER-IP   EXTERNAL-IP     PORT(S)        AGE
-final-app-service   LoadBalancer   10.0.52.5    35.236.35.182   80:31358/TCP   40s
-kubernetes          ClusterIP      10.0.48.1    <none>          443/TCP        3h15m
-```
-
-## now take the (EXTERNAL-IP) open it in browser
-
-# congratulations your app is ready 
-
-![final](https://github.com/MahmoudSamir0/project-terraform-gcp-gke-infrastructure/blob/master/screenshot/web2.png)
-
-
- # screenshots 
- 
- [screenshots](https://github.com/MahmoudSamir0/project-terraform-gcp-gke-infrastructure/tree/master/screenshot)
-
