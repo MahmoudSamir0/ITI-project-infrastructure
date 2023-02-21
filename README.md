@@ -934,3 +934,10 @@ Do you want to perform these actions?
 answer `yes` to the confirmation prompt.
 
 ## now your infrastructure is ready 
+
+
+
+ # screenshots 
+ 
+ [screenshots](https://github.com/MahmoudSamir0/project-terraform-gcp-gke-infrastructure/tree/master/screenshot)
+ 
